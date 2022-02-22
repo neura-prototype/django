@@ -1,0 +1,30 @@
+
+body {
+    padding: 25px;
+    font-family: 'Poppins', sans-serif;
+	background: #f5f5f5;
+    color: black;
+    background-repeat: no-repeat;
+}
+.dark-mode {
+    background: black;
+    color: white;
+}
+
+body{
+    background-color: #ebeff5;
+}
+
+
+#total-orders{
+    background-color: #4cb4c7;
+}
+
+
+#orders-delivered{
+    background-color: #7abecc;
+}
+
+#orders-pending{
+    background-color: #7CD1C0;
+}
