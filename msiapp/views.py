@@ -1,3 +1,4 @@
+from multiprocessing import context
 from django.shortcuts import render, redirect
 from re import X
 import mysql.connector
@@ -17,8 +18,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
 import os
 from msi import settings
-from .filters import DeviceFilter
+from .filters import DeviceFilter, CustomerFilter 
 from .insert_test import day_django
+from datetime import date, timedelta
 
 
 def enquiry_test(request):
@@ -48,19 +50,26 @@ def enquiry_test(request):
 
 
 def index(request):
-  return render(request, '../templates/msiapp_templates/index.html')
+  	return render(request, '../templates/msiapp_templates/index.html')
 
 
 def charts(request):
-  return render(request, '../templates/msiapp_templates/charts.html')
+  	return render(request, '../templates/msiapp_templates/charts.html')
 
 
 def dashboard(request):
-  return render(request, '../templates/msiapp_templates/dashboard.html')
+	if request.user.groups == 'customer':
+		return render(request, '../templates/msiapp_templates/dashboard.html')
+	else:
+		customers = Customer.objects.all()
+
+		context = {
+			'form': customers,
+		}
+		return render(request, '../templates/msiapp_templates/admin_folder/customer_list.html', context)
 
 
 def loginPage(request):
-
 	if request.method == 'POST':
 		username = request.POST.get('username')
 		password =request.POST.get('password')
@@ -102,7 +111,6 @@ def registerPage(request):
 
 @login_required(login_url="login")
 def user_profile(request):
-
 	customer = Customer.objects.get(user=request.user)
 	if request.method == 'POST':
 		customer = CustomerForm(request.POST, request.FILES, instance=customer)
@@ -166,9 +174,9 @@ def user_profile(request):
 	return render(request, "msiapp_templates/user_profile.html", context)
 
 
-def device(request):
-
-  return render(request, '../templates/msiapp_templates/device_add.html')
+#def device(request):
+#
+#  return render(request, '../templates/msiapp_templates/device_add.html')
 
 @login_required(login_url="login")
 def device(request):
@@ -227,3 +235,52 @@ def edit_device(request, pk):
 
 def delete_device(request, pk):
 	pass
+
+
+def admin_dashboard(request):
+	return render(request, '../templates/msiapp_templates/admin_folder/admin_dashboard.html')
+
+
+def customer_list(request):
+	customers = Customer.objects.all()
+	return customers
+	#context = {
+	#'form': customers,
+	#}
+	#return render(request, '../templates/msiapp_templates/admin_folder/customer_list.html')
+
+
+def admin_navbar_search(request):
+	if request.method == 'POST':
+		node_name = float(request.POST.get('node_name'))
+		print('type', type(node_name))
+		start_date = request.POST.get('start_date')
+		print(start_date)
+		# Change date for MySQL
+		start_date = start_date.replace('-','/')
+
+		end_date = request.POST.get('end_date')
+		print(end_date)
+		# Change date for MySQL
+		end_date = end_date.replace('-','/')
+		print('node_name', node_name)
+		engine = create_engine('mysql+mysqlconnector://root:password@localhost:3306/NeuraData')
+		period = pd.read_sql("SELECT * FROM vsumperiodvaluesday_django", engine)
+		node_period = period[(period['Node'] == node_name)]
+		print('node_period', node_period)
+		new_period = node_period[(node_period['DateOnly'] >= start_date) & (node_period['DateOnly'] <= end_date)]
+		
+		print('new_period', new_period)
+		df = pd.DataFrame(new_period, columns=['DateOnly','EnergyCost'])
+		x = []
+		y = []
+		for column in df:
+			columnSeriesObj = df[column]
+			if column == 'DateOnly':
+				x = columnSeriesObj.values
+			elif column == 'EnergyCost':
+				y = columnSeriesObj.values
+		chart = get_plot(x, y)
+		df.plot(x ='DateOnly', y='EnergyCost', kind = 'line')
+		#plt.show()
+		return render(request, '../templates/msiapp_templates/admin_folder/energy_price.html', {'chart':chart})

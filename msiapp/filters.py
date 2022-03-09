@@ -9,3 +9,10 @@ class DeviceFilter(django_filters.FilterSet):
     class Meta:
         model = Device
         fields = ['customers']
+
+class CustomerFilter(django_filters.FilterSet):
+    customers = CharFilter(field_name='customers', lookup_expr='icontains')
+    
+    class Meta:
+        model = Device
+        fields = ['customers']

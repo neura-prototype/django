@@ -15,4 +15,5 @@ urlpatterns= [
         path('edit_device/<str:pk>', views.edit_device, name='edit_device'),
         path('delete_device/<str:pk>', views.delete_device, name='delete_device'),
         path('enquiry_test', views.enquiry_test, name='enquiry_test'),
+        path('admin_navbar_search', views.admin_navbar_search, name='admin_navbar_search'),
 ]

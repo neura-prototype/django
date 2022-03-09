@@ -1,4 +1,7 @@
-  <!-- Navbar -->
+{% if messages %}
+{% include 'messages/msiapp_messages.html' %}
+{% endif %}
+ <!-- Navbar -->
   <nav class="main-header navbar navbar-expand navbar-white navbar-light">
     <!-- Left navbar links -->
     <ul class="navbar-nav">
@@ -14,5 +17,6 @@
     </ul>
     </ul>
     <a href="logout" class="nav-link">logout</a>
+
   </nav>
   <!-- /.navbar -->

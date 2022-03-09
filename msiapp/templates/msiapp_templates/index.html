@@ -32,7 +32,7 @@
 <div  class="notification-css">
 			</div>
     <ul class="navbar-nav navbar-right">
-        <li class="user-profile-link"><a href="{% url 'user_profile' %}" class="authen-nav-link nav-link-lg nav-link-user">
+        <li class="user-profile-link"><a href="{% url 'dashboard' %}" class="authen-nav-link nav-link-lg nav-link-user">
             {% if request.user.customer.profile_pic %}
             <img alt="image" src="../media/{{ request.user.customer.profile_pic }}" class="rounded-circle mr-2" style="height:40px; ">
             {% else %}
