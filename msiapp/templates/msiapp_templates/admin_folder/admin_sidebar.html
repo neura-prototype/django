@@ -40,6 +40,9 @@
                 <i class="right fas fa-angle-left"></i>
               </p>
             </a>
+            <!-- End Dashboard Heading  -->
+
+            <!-- Charts -->
             <li class="nav-item">
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-chart-pie"></i>
@@ -57,6 +60,35 @@
               </li>
             </ul>
           </li>
+          <!-- End Charts  -->
+
+          <!-- Customer  -->
+          <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fas fa-th"></i>
+              <p>
+                Customer
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="{% url 'add_customer' %}" class="nav-link">
+                  <i class="far fa-face nav-icon"></i>
+                  <p>Add Customer</p>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a href="{% url 'list_customer' %}" class="nav-link">
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>List Customer</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <!-- End Customer  -->
+
+          <!-- Device  -->
           <li class="nav-item">
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-th"></i>
@@ -80,6 +112,8 @@
               </li>
             </ul>
           </li>
+          <!-- End Device  -->
+
           <!-- Enquiry Reports  -->
           <li class="nav-item">
             <a href="#" class="nav-link">

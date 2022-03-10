@@ -12,6 +12,10 @@ urlpatterns= [
         path('charts', views.charts, name='charts'),
         path('device', views.device, name='device'),
         path('list_device', views.list_device, name='list_device'),
+
+        path('list_customer', views.list_customer, name='list_customer'),
+        path('add_customer', views.add_customer, name='add_customer'),
+
         path('edit_device/<str:pk>', views.edit_device, name='edit_device'),
         path('delete_device/<str:pk>', views.delete_device, name='delete_device'),
         path('enquiry_test', views.enquiry_test, name='enquiry_test'),

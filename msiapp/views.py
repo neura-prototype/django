@@ -20,7 +20,7 @@ import os
 from msi import settings
 from .filters import DeviceFilter, CustomerFilter 
 from .insert_test import day_django
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 
 
 def enquiry_test(request):
@@ -102,8 +102,7 @@ def registerPage(request):
 			user.groups.add(group)
 
 			messages.success(request, 'User was created for ' + username)
-
-			return redirect('login')
+			return redirect('list_customer')
 
 	context = {'form':form}
 	return render(request, '../templates/accounts/register.html', context)
@@ -241,36 +240,59 @@ def admin_dashboard(request):
 	return render(request, '../templates/msiapp_templates/admin_folder/admin_dashboard.html')
 
 
-def customer_list(request):
+def list_customer(request):
 	customers = Customer.objects.all()
-	return customers
-	#context = {
-	#'form': customers,
-	#}
-	#return render(request, '../templates/msiapp_templates/admin_folder/customer_list.html')
+	context = {
+	'form': customers,
+	}
+	return render(request, '../templates/msiapp_templates/admin_folder/customer_list.html', context)
+
+
+def add_customer(request):
+	customers = Customer.objects.all()
+
+	context = {
+	'form': customers,
+	}
+	return render(request, '../templates/msiapp_templates/admin_folder/customer_add.html', context)
 
 
 def admin_navbar_search(request):
 	if request.method == 'POST':
 		node_name = float(request.POST.get('node_name'))
-		print('type', type(node_name))
 		start_date = request.POST.get('start_date')
-		print(start_date)
-		# Change date for MySQL
-		start_date = start_date.replace('-','/')
-
 		end_date = request.POST.get('end_date')
-		print(end_date)
-		# Change date for MySQL
-		end_date = end_date.replace('-','/')
-		print('node_name', node_name)
+
 		engine = create_engine('mysql+mysqlconnector://root:password@localhost:3306/NeuraData')
 		period = pd.read_sql("SELECT * FROM vsumperiodvaluesday_django", engine)
 		node_period = period[(period['Node'] == node_name)]
-		print('node_period', node_period)
-		new_period = node_period[(node_period['DateOnly'] >= start_date) & (node_period['DateOnly'] <= end_date)]
-		
-		print('new_period', new_period)
+		#'''
+		if start_date == '' and end_date != '':
+			print('if_1')
+			# Change date for MySQL
+			if end_date:
+				end_date = end_date.replace('-','/')
+			new_period = node_period[(node_period['DateOnly'] <= end_date)]
+
+		elif start_date != '' and end_date != '':
+			print('if_2')
+			# Change date for MySQL
+			if start_date:
+				start_date = start_date.replace('-','/')
+			# Change date for MySQL
+			if end_date:
+				end_date = end_date.replace('-','/')
+			new_period = node_period[(node_period['DateOnly'] >= start_date) & (node_period['DateOnly'] <= end_date)]
+		elif end_date == '' and start_date != '':
+			print('if_3')
+			# Change date for MySQL
+			start_date = start_date.replace('-','/')
+			new_period = node_period[(node_period['DateOnly'] >= start_date)]
+		else:
+			print('else')
+			new_period = node_period
+
+		print(new_period)
 		df = pd.DataFrame(new_period, columns=['DateOnly','EnergyCost'])
 		x = []
 		y = []
@@ -282,5 +304,11 @@ def admin_navbar_search(request):
 				y = columnSeriesObj.values
 		chart = get_plot(x, y)
 		df.plot(x ='DateOnly', y='EnergyCost', kind = 'line')
-		#plt.show()
 		return render(request, '../templates/msiapp_templates/admin_folder/energy_price.html', {'chart':chart})
+	else:
+		customers = Customer.objects.all()
+
+		context = {
+			'form': customers,
+		}
+		return render(request, '../templates/msiapp_templates/admin_folder/customer_list.html', context)

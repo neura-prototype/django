@@ -75,9 +75,11 @@
                           <thead>
                               <tr>
                                   <th class="text-center" scope="col">Name</th>
+                                  <th scope="col">Username</th>
                                   <th scope="col">Profile Pic</th>
                                   <th scope="col">Start Date</th>
-                                  <th scope="col">Address</th>
+                                  <th scope="col">Email Address</th>
+                                  <th scope="col">staff</th>
                                   <th class="text-center" scope="col">Retrieve Customer</th>
                               </tr>
                           </thead>
@@ -90,6 +92,12 @@
                                             <h5 class="text-center">{{ customer.name_1 }}</h5>
                                         </div>
                                     </th>
+                                    <td>
+                                      <div class="event-wrap">
+                                          <h5><a >{{ customer.user.username }}</a></h3>
+                                          
+                                      </div>
+                                  </td>
                                     <td>
                                         <div class="event-img">
                                           {% if request.user.customer.profile_pic %}
@@ -108,10 +116,15 @@
                                   </td>
                                   <td>
                                     <div class="event-wrap">
-                                      <h5><a >{{ customer.address_line_1}}</a></h5>
+                                      <h5><a >{{ customer.user.email }}</a></h5>
                                         
                                     </div>
                                 </td>
+                                <td>
+                                  <div class="event-wrap">
+                                    <h5><a >{{ customer.user.is_staff }}</a></h5>
+                                  </div>
+                              </td>
                                     <td>
                                         <div class="primary-btn text-center">
                                             <a class="btn btn-primary" href="#">Read More</a>

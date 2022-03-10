@@ -13,7 +13,7 @@ def customer_profile(sender, instance, created, **kwargs):
     if created:
         group = Group.objects.get(name='customer')
         instance.groups.add(group)
-        # Customer and related customer already being created in view
+        # Customer  already being created in view
         Customer.objects.create(
             user=instance,
             registration_start_date=datetime.date.today(),
