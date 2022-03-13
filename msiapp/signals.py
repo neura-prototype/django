@@ -26,6 +26,7 @@ post_save.connect(customer_profile, sender=User)
 @receiver(post_save, sender=Device)
 def device_add(sender, instance, created, **kwargs):
     if created:
+        print(instance.cus_id)
         customer = Customer.objects.get(id=instance.cus_id)
         instance.customers.add(customer)
 

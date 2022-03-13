@@ -1,3 +1,10 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  {% load static %}
 {% if messages %}
 {% include 'messages/msiapp_messages.html' %}
 {% endif %}
@@ -9,8 +16,10 @@
         <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
       </li>
     </ul>
+    
     <form action="{% url 'admin_navbar_search' %}" method="post" enctype="multipart/form-data" id="myform">
       {% csrf_token %}
+      
         <div class="card-body">
           <div class="row">
               <div class="col-lg-6 col-sm-10">

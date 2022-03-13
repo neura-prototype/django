@@ -23,44 +23,27 @@
           {% endif %}
         </div>
         <div class="info">
-          <a href="{% url 'user_profile' %}" class="d-block">{{ request.user }}</a>
+          <a href="{% url 'admin_user_profile' %}" class="d-block">{{ request.user }}</a>
         </div>
       </div>
 
       <!-- Sidebar Menu -->
       <nav class="mt-2">
-        <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <ul class="nav nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
-          <li class="nav-item menu-open">
-            <a  class="nav-link active">
-              <i class="nav-icon fas fa-tachometer-alt" ></i>
-              <p>
-                Dashboard
-                <i class="right fas fa-angle-left"></i>
-              </p>
-            </a>
-            <!-- End Dashboard Heading  -->
-
-            <!-- Charts -->
-            <li class="nav-item">
-            <a href="#" class="nav-link">
-              <i class="nav-icon fas fa-chart-pie"></i>
-              <p>
-                Charts
-                <i class="right fas fa-angle-left"></i>
-              </p>
-            </a>
+               <li class="nav-item menu-open">
+            
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="{% url 'charts' %}" class="nav-link">
-                  <i class="far fa-circle nav-icon"></i>
-                  <p>Charts</p>
+                <a href="{% url 'dashboard' %}" class="nav-link">
+
+                  <i class="nav-icon fas fa-tachometer-alt" ></i>
+                  <p>Dashboard</p>
                 </a>
               </li>
             </ul>
-          </li>
-          <!-- End Charts  -->
+            <!-- End Dashboard Heading  -->
 
           <!-- Customer  -->
           <li class="nav-item">
@@ -73,18 +56,22 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="{% url 'add_customer' %}" class="nav-link">
+                <a href="{% url 'admin_add_customer' %}" class="nav-link">
                   <i class="far fa-face nav-icon"></i>
+                  <i class="far fa-circle nav-icon"></i>
                   <p>Add Customer</p>
                 </a>
               </li>
               <li class="nav-item">
-                <a href="{% url 'list_customer' %}" class="nav-link">
+                <a href="{% url 'admin_list_customer' %}" class="nav-link">
+                  <i class="far fa-face nav-icon"></i>
                   <i class="far fa-circle nav-icon"></i>
                   <p>List Customer</p>
                 </a>
               </li>
-            </ul>
+              
+             </ul>           
+            
           </li>
           <!-- End Customer  -->
 
@@ -99,13 +86,15 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="{% url 'device' %}" class="nav-link">
+                <a href="{% url 'admin_add_device' %}" class="nav-link">
+                  <i class="far fa-face nav-icon"></i>
                   <i class="far fa-circle nav-icon"></i>
                   <p>Add Device</p>
                 </a>
               </li>
               <li class="nav-item">
-                <a href="{% url 'list_device' %}" class="nav-link">
+                <a href="{% url 'admin_list_device' pk=1 %}" class="nav-link">
+                  <i class="far fa-face nav-icon"></i>
                   <i class="far fa-circle nav-icon"></i>
                   <p>List Device</p>
                 </a>
@@ -125,19 +114,43 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="{% url 'enquiry_test' %}" class="nav-link">
+                <a href="{% url 'admin_navbar_search' %}" class="nav-link">
+                  <i class="far fa-face nav-icon"></i>
                   <i class="far fa-circle nav-icon"></i>
-                  <p>DataBase View Extract</p>
+                  <p>Energy Cost Report</p>
                 </a>
               </li>
               <li class="nav-item">
                 <a href="{% url 'list_device' %}" class="nav-link">
+                  <i class="far fa-face nav-icon"></i>
                   <i class="far fa-circle nav-icon"></i>
                   <p>Empty</p>
                 </a>
               </li>
             </ul>
           </li>
+          <!-- End Enquiry Reports  -->
+
+            <!-- Charts -->
+            <li class="nav-item">
+            <a href="#" class="nav-link">
+              <i class="nav-icon fas fa-chart-pie"></i>
+              <p>
+                Charts
+                <i class="right fas fa-angle-left"></i>
+              </p>
+            </a>
+            <ul class="nav nav-treeview">
+              <li class="nav-item">
+                <a href="{% url 'charts' %}" class="nav-link">
+                  <i class="far fa-face nav-icon"></i>
+                  <i class="far fa-circle nav-icon"></i>
+                  <p>Charts</p>
+                </a>
+              </li>
+            </ul>
+          </li>
+          <!-- End Charts  -->
 
         </ul>
       </nav>

@@ -10,14 +10,31 @@ urlpatterns= [
         path('logout', views.logoutUser, name='logout'),
         path('dashboard', views.dashboard, name='dashboard'),
         path('charts', views.charts, name='charts'),
+
         path('device', views.device, name='device'),
         path('list_device', views.list_device, name='list_device'),
+        path('edit_device/<str:pk>', views.edit_device, name='edit_device'),
+        path('delete_device/<str:pk>', views.delete_device, name='delete_device'),
 
         path('list_customer', views.list_customer, name='list_customer'),
         path('add_customer', views.add_customer, name='add_customer'),
+        path('edit_customer/<str:pk>', views.edit_customer, name='edit_customer'),
+        path('delete_customer/<str:pk>', views.delete_customer, name='delete_customer'),
 
-        path('edit_device/<str:pk>', views.edit_device, name='edit_device'),
-        path('delete_device/<str:pk>', views.delete_device, name='delete_device'),
+        # ADMIN
         path('enquiry_test', views.enquiry_test, name='enquiry_test'),
         path('admin_navbar_search', views.admin_navbar_search, name='admin_navbar_search'),
+        path('admin_user_profile', views.admin_user_profile, name='admin_user_profile'),
+
+        # Admin Device
+        path('admin_add_device', views.admin_add_device, name='admin_add_device'),
+        path('admin_list_device/<str:pk>', views.admin_list_device, name='admin_list_device'),
+        path('admin_edit_device/<str:pk>', views.admin_edit_device, name='admin_edit_device'),
+        path('admin_delete_device/<str:pk>', views.admin_delete_device, name='admin_delete_device'),
+
+        # Admin Customer
+        path('admin_add_customer', views.admin_add_customer, name='admin_add_customer'),
+        path('admin_list_customer', views.admin_list_customer, name='admin_list_customer'),
+        path('admin_edit_customer/<str:pk>', views.admin_edit_customer, name='admin_edit_customer'),
+        path('admin_delete_customer/<str:pk>', views.admin_delete_customer, name='admin_delete_customer'),
 ]

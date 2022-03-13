@@ -33,12 +33,9 @@
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
 
-  <!-- Preloader -->
-  <div class="preloader flex-column justify-content-center align-items-center">
-    <img class="animation__shake" src="{% static 'dist/img/AdminLTELogo.png' %}" alt="AdminLTELogo" height="60" width="60">
-  </div>
+  
 
-  {% include 'msiapp_templates/admin_folder/admin_navbar.html' %}
+  {% include 'msiapp_templates/admin_folder/admin_customer_search_navbar.html' %}
   {% include 'msiapp_templates/admin_folder/admin_sidebar.html' %}
  {% block content %}
   <!-- Content Wrapper. Contains page content -->
@@ -52,12 +49,12 @@
       <div class="container-fluid">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1 class="m-0">Customer List</h1>
+            <h1 class="m-0">Admin: Customer List</h1>
           </div><!-- /.col -->
           <div class="col-sm-6">
             <ol class="breadcrumb float-sm-right">
               <li class="breadcrumb-item">Home</li>
-              <li class="breadcrumb-item active"><a href="{% url 'index' %}">Landing Page</a></li>
+              <li class="breadcrumb-item active"><a href="{% url 'index' %}" style="margin-right: 40px;">Landing Page</a></li>
             </ol>
           </div><!-- /.col -->
         </div><!-- /.row -->
@@ -79,8 +76,9 @@
                                   <th scope="col">Profile Pic</th>
                                   <th scope="col">Start Date</th>
                                   <th scope="col">Email Address</th>
-                                  <th scope="col">staff</th>
+                                  <th scope="col">Staff</th>
                                   <th class="text-center" scope="col">Retrieve Customer</th>
+                                  <th class="text-center" scope="col">Delete Customer</th>
                               </tr>
                           </thead>
                           <tbody>
@@ -124,12 +122,17 @@
                                   <div class="event-wrap">
                                     <h5><a >{{ customer.user.is_staff }}</a></h5>
                                   </div>
-                              </td>
+                                </td>
                                     <td>
                                         <div class="primary-btn text-center">
-                                            <a class="btn btn-primary" href="#">Read More</a>
+                                            <a class="btn btn-primary" href="{% url 'admin_list_device' pk=customer.user.id %} " >List Device/Node</a>
                                         </div>
                                     </td>
+                                    <td>
+                                      <div class="primary-btn text-center">
+                                          <a class="btn btn-danger" href="{% url 'admin_delete_customer' pk=customer.user.id %} " >Delete Customer</a>
+                                      </div>
+                                  </td>
                                 </tr>
                             {% endfor %}
                           </tbody>
@@ -142,21 +145,16 @@
 
   </div>
   <!-- /.content-wrapper -->
-  <footer class="main-footer">
-    <strong>Copyright &copy; 2022-2023 <a href="https://google.com">NeuraTech</a>.</strong>
-    All rights reserved.
-    <div class="float-right d-none d-sm-inline-block">
-      <b>Version</b> 3.2.0
-    </div>
-  </footer>
-
-  <!-- Control Sidebar -->
-  <aside class="control-sidebar control-sidebar-dark">
-    <!-- Control sidebar content goes here -->
-  </aside>
-  <!-- /.control-sidebar -->
-</div>
-<!-- ./wrapper -->
+  <section class="footer">
+    <!-- /.content-wrapper -->
+    <footer class="main-footer">
+      <strong>Copyright &copy; 2022-2023 <a href="https://google.com">NeuraTech</a>.</strong>
+      All rights reserved.
+      <div class="float-right d-none d-sm-inline-block">
+        <b>Version</b> 1.1.0
+      </div>
+    </footer>  <!-- /.content-wrapper -->
+  </section>
 {% endblock content %}
 
 <!-- jQuery -->

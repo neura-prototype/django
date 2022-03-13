@@ -32,9 +32,14 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'django_filters',
     'msiapp',
     
 ]
+
+SITE_ID = 1
+
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -89,11 +94,14 @@ AUTHENTICATION_BACKENDS = (
     'allauth.account.auth_backends.AuthenticationBackend',
 )
 #django-allauth registraion settings
-#ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS =1
-ACCOUNT_EMAIL_REQUIRED = False
-#ACCOUNT_EMAIL_VERIFICATION = "mandatory"
-#ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
-  
+
+ACCOUNT_AUTHENTIFICATION_METHOD = "email"
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS =1
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_LOGIN_ATTEMPTS_LIMIT = 5
+
 # 1 day
 ACCOUNT_LOGIN_ATTEMPTS_TIMEOUT = 86400 
   
@@ -147,3 +155,11 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Gmail email setup for verification emails
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_USE_TLS = True
+EMAIL_PORT = '587'
+EMAIL_HOST_USER = 'sparDjango@gmail.com'
+EMAIL_HOST_PASSWORD = 'n+a$jS9KgbPk_R'
