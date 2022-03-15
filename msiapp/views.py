@@ -6,7 +6,7 @@ import pandas as pd
 import sqlalchemy
 from sqlalchemy import create_engine
 import matplotlib.pyplot as plt
-from .utils import get_plot
+from .utils import get_plot, get_usage_plot
 from django.http import HttpResponse
 from django.forms import inlineformset_factory
 from django.contrib.auth.forms import UserCreationForm
@@ -22,6 +22,7 @@ from .filters import DeviceFilter, customerFilter
 from .insert_test import day_django
 from datetime import date, timedelta, datetime
 from django.core.mail import send_mail
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 def enquiry_test(request):
@@ -63,9 +64,22 @@ def dashboard(request):
 		return render(request, '../templates/msiapp_templates/dashboard.html')
 	else:
 		customers = Customer.objects.all()
+		# Paginator
+		page_num = request.GET.get('page', 1)
+		paginator = Paginator(customers, 6) # 6 customers per page
+		print(paginator)
+		try:
+			customers = paginator.page(page_num)
+		except PageNotAnInteger:
+			# if page is not an integer, deliver the first page
+			customers = paginator.page(1)
+		except EmptyPage:
+			# if the page is out of range, deliver the last page
+			customers = paginator.page(paginator.num_pages)
 
 		context = {
 			'form': customers,
+			'page_obj': customers,
 		}
 		return render(request, '../templates/msiapp_templates/admin_folder/admin_customer_list.html', context)
 
@@ -79,7 +93,15 @@ def loginPage(request):
 
 		if user is not None:
 			login(request, user)
-			return redirect('dashboard')
+			my_user = User.objects.get(username=user)
+			customer = Customer.objects.get(user=my_user)
+			if customer.name_1:
+				return redirect('dashboard')
+			else:
+				if user.groups == 'customer':
+					return redirect('user_profile')
+				else:
+					return redirect('admin_user_profile')
 		else:
 			messages.info(request, 'Username OR password is incorrect')
 
@@ -106,6 +128,7 @@ def registerPage(request):
 			my_username = request.POST.get('username')
 			my_email = str(request.POST.get('email'))
 			my_password = request.POST.get('password1')
+			print(my_email)
 			# Send Email via code
 			send_mail(
 				'Neura Email Verification',
@@ -194,6 +217,7 @@ def user_profile(request):
 		else:
 			messages.error(request, "Invalid Form")
 
+	
 	context = {
 		'form': customer
 	}
@@ -355,29 +379,26 @@ def list_device(request):
 
 @login_required(login_url="login")
 def admin_list_device(request, pk):
-	print('wtf', pk)
-	if pk:
-		user = User.objects.get(id=pk)
-	print(user)
-	try:
-		customer = Customer.objects.get(user=user)
-	except:
-		messages.error(request, "User has no devices registered to the profile currently")
-		return redirect(admin_list_customer)
+	if request.method == 'POST':
+		device = Device.objects.filter(customers=customer)
+		check = len(device)
+		if check == 0:
+			messages.error(request, "Device not found... ")
+			return redirect(admin_list_customer)
 
-	device = Device.objects.filter(customers=customer)
-	check = len(device)
-	if check == 0:
-		messages.error(request, "Device not found... ")
-		return redirect(admin_list_customer)
-
-	my_filter = DeviceFilter(request.GET, queryset=device)
-	meetings = my_filter.qs
-	context = {
-        'myFilter': my_filter,
-        'form': meetings,
-		'customer': customer,
-    }
+		my_filter = DeviceFilter(request.GET, queryset=device)
+		meetings = my_filter.qs
+		context = {
+			'myFilter': my_filter,
+			'form': meetings,
+			'customer': customer,
+		}
+		return render(request, '../templates/msiapp_templates/admin_folder/admin_device_list.html', context)
+	else:
+		devices = Device.objects.all()
+		context = {
+			'form': devices,
+		}
 	return render(request, '../templates/msiapp_templates/admin_folder/admin_device_list.html', context)
 
 
@@ -489,34 +510,49 @@ def list_customer(request):
 def admin_list_customer(request):
 	customers = Customer.objects.all()
 	initial_customer_count = customers.count()
+
 	myFilter = customerFilter(request.GET, queryset=customers)
+	
 	# rebuilt list
-
 	customers = myFilter.qs
+	print(initial_customer_count)
+	print(len(customers))
+	# Paginator
+	page_num = request.GET.get('page', 1)
+	paginator = Paginator(customers, 6) # 6 customers per page
 
-	user = request.GET.get('user')
+	try:
+		customers = paginator.page(page_num)
+	except PageNotAnInteger:
+		# if page is not an integer, deliver the first page
+		customers = paginator.page(1)
+	except EmptyPage:
+		# if the page is out of range, deliver the last page
+		customers = paginator.page(paginator.num_pages)
+
+	name_1 = request.GET.get('name_1')
 	email = request.GET.get('email')
 	address_line_1 = request.GET.get('address_line_1')
 	registration_start_date = request.GET.get('registration_start_date')
 
-	if user == None:
-		user = ''
+	if name_1 == None:
+		name_1 = ''
 	if email == None:
 		email = ''
 	if address_line_1 == None:
 		address_line_1 = ''
 	if registration_start_date == None:
 		registration_start_date = ''
-
+	print('count', customers)
 	context = {
 		'form': customers,
-		'user': user,
+		'page_obj': customers,
+		'name_1': name_1,
 		'email': email,
 		'address_line_1': address_line_1,
 		'registration_start_date': registration_start_date,
 	}
 	return render(request, '../templates/msiapp_templates/admin_folder/admin_customer_list.html', context)
-
 
 def add_customer(request):
 	customers = Customer.objects.all()
@@ -573,12 +609,13 @@ def admin_delete_customer(request, pk):
 
 def admin_navbar_search(request):
 	if request.method == 'POST':
-		node_name = float(request.POST.get('node_name'))
+		node_name = request.POST.get('node_name')
 		start_date = request.POST.get('start_date')
 		end_date = request.POST.get('end_date')
 
 		engine = create_engine('mysql+mysqlconnector://root:password@localhost:3306/NeuraData')
 		period = pd.read_sql("SELECT * FROM vsumperiodvaluesday_django", engine)
+		
 		node_period = period[(period['Node'] == node_name)]
 		#'''
 		if start_date == '' and end_date != '':
@@ -605,8 +642,9 @@ def admin_navbar_search(request):
 		else:
 			
 			new_period = node_period
-
 		print(new_period)
+		# To display dataframe
+		table_content = new_period.to_html()
 		df = pd.DataFrame(new_period, columns=['DateOnly','EnergyCost'])
 		x = []
 		y = []
@@ -618,7 +656,11 @@ def admin_navbar_search(request):
 				y = columnSeriesObj.values
 		chart = get_plot(x, y)
 		df.plot(x ='DateOnly', y='EnergyCost', kind = 'line')
-		return render(request, '../templates/msiapp_templates/admin_folder/admin_energy_price.html', {'chart':chart})
+		context = {
+			'chart':chart,
+			'table_content': table_content,
+		}
+		return render(request, '../templates/msiapp_templates/admin_folder/admin_energy_price.html', context)
 	else:
 		customers = ''
 
@@ -626,3 +668,65 @@ def admin_navbar_search(request):
 			'form': customers,
 		}
 		return render(request, '../templates/msiapp_templates/admin_folder/admin_energy_price.html', context)
+
+
+def admin_energy_usage_report(request):
+	if request.method == 'POST':
+		node_name = float(request.POST.get('node_name'))
+		start_date = request.POST.get('start_date')
+		end_date = request.POST.get('end_date')
+
+		engine = create_engine('mysql+mysqlconnector://root:password@localhost:3306/NeuraData')
+		period = pd.read_sql("SELECT * FROM vsumperiodvaluesday_django", engine)
+		
+		node_period = period[(period['Node'] == node_name)]
+		#'''
+		if start_date == '' and end_date != '':
+
+			# Change date for MySQL
+			if end_date:
+				end_date = end_date.replace('-','/')
+			new_period = node_period[(node_period['DateOnly'] <= end_date)]
+
+		elif start_date != '' and end_date != '':
+			# Change date for MySQL
+			if start_date:
+				start_date = start_date.replace('-','/')
+			# Change date for MySQL
+			if end_date:
+				end_date = end_date.replace('-','/')
+			new_period = node_period[(node_period['DateOnly'] >= start_date) & (node_period['DateOnly'] <= end_date)]
+		elif end_date == '' and start_date != '':
+			print('if_3')
+			# Change date for MySQL
+			start_date = start_date.replace('-','/')
+			new_period = node_period[(node_period['DateOnly'] >= start_date)]
+		else:
+			
+			new_period = node_period
+		print(new_period)
+		# To display dataframe
+		table_content = new_period.to_html()
+		df = pd.DataFrame(new_period, columns=['DateOnly','Energy'])
+		x = []
+		y = []
+		for column in df:
+			columnSeriesObj = df[column]
+			if column == 'DateOnly':
+				x = columnSeriesObj.values
+			elif column == 'Energy':
+				y = columnSeriesObj.values
+		chart = get_usage_plot(x, y)
+		df.plot(x ='DateOnly', y='Energy', kind = 'line')
+		context = {
+			'chart':chart,
+			'table_content': table_content,
+		}
+		return render(request, '../templates/msiapp_templates/admin_folder/admin_energy_usage.html', context)
+	else:
+		customers = ''
+
+		context = {
+			'form': customers,
+		}
+		return render(request, '../templates/msiapp_templates/admin_folder/admin_energy_usage.html', context)

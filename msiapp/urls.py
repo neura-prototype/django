@@ -25,6 +25,7 @@ urlpatterns= [
         path('enquiry_test', views.enquiry_test, name='enquiry_test'),
         path('admin_navbar_search', views.admin_navbar_search, name='admin_navbar_search'),
         path('admin_user_profile', views.admin_user_profile, name='admin_user_profile'),
+        path('admin_energy_usage_report', views.admin_energy_usage_report, name='admin_energy_usage_report'),
 
         # Admin Device
         path('admin_add_device', views.admin_add_device, name='admin_add_device'),

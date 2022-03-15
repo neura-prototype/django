@@ -114,7 +114,7 @@
                                   </td>
                                   <td>
                                     <div class="event-wrap">
-                                      <h5><a >{{ customer.user.email }}</a></h5>
+                                      <h5><a >{{ customer.email }}</a></h5>
                                         
                                     </div>
                                 </td>
@@ -135,9 +135,16 @@
                                   </td>
                                 </tr>
                             {% endfor %}
-                          </tbody>
+                                </tbody>
+                                <br><hr>
+
+                                
                       </table>
+                      
                   </div>
+                  {% include 'msiapp_templates/admin_folder/admin_pagination.html' %}
+                  <br>
+                  <br>
               </div>
               
           </div>

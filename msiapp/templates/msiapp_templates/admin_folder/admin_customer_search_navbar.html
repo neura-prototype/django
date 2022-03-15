@@ -9,38 +9,41 @@
         <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
       </li>
     </ul>
-    <form action="{% url 'list_customer' %}" method="get">
+    <form action="{% url 'admin_list_customer' %}" method="get">
       {% csrf_token %}
       <div class="card-body">
         <div class="row">
-            <div class="col-lg-6 col-sm-10">
-                <label>Customer User</label>
-                <input  class="form-control" name="user" value ="{{ user }}" placeholder="Enter Username" />
+                       <div class="col-lg-6 col-sm-10">
+                <label>Customer Name_1</label>
+                <input  type="text" class="form-control" name="name_1" value ="{{ name_1 }}" placeholder="Search by Customer's Name_1" />
             </div>
-            <br>
-            <br>
+
             <div class="col-lg-6 col-sm-10">
-              <label>Customer Email</label>
-              <input  type="text" class="form-control" value ="{{ email }}" name="email" placeholder="Enter Email"/>
-            </div>
-            <br>
-            <br>
-            <div class="col-lg-6 col-sm-10">
-              <label style="margin-top:10px;">Customer Address</label>
+              <label >Customer Address</label>
               <input  type="text" class="form-control" value ="{{ address_line_1 }}" name="address_line_1" placeholder="Enter Address" />
             </div>
             <br>
             <br>
-            <div class="col-lg-6 col-sm-10">
-              <label style="margin-top:10px;">Date Registered</label>
-              <input  type="date" class="form-control" value ="{{ registration_start_date }}" name="registration_start_date" placeholder="Enter Registration Start Date"/>
+             <div class="col-lg-6 col-sm-10">
+                <label>Customer Email</label>
+                <input  type="text" class="form-control" value ="{{ email }}" name="email" placeholder="Enter Email"/>
+              </div>
+
+              <!--
+              <div class="col-lg-6 col-sm-10">
+                <label style="margin-top:10px;">Date Registered</label>
+                <input  type="date" class="form-control" value ="{{ registration_start_date }}" name="registration_start_date" placeholder="Enter Registration Start Date"/>
+              </div>-->
+              <div class="col-lg-4 col-sm-6" style="margin: 10px; margin-top: 20px;">
+
+              <button class="btn btn-primary" type="submit"  style="margin-top:10px;">
+                Search
+              </button>
             </div>
-            <br>       
-            <br>
+
+            <a class="btn-outline-primary btn"  href="{% url 'logout' %}" role="button" style="position: absolute; right: 50px; margin-top: 100px;">Logout</a>
+            </div>
         </div>
-        <button class="btn btn-primary" type="submit"  style="margin-top:10px;">
-          Search
-        </button>
     </form>
       
 

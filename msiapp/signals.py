@@ -17,7 +17,8 @@ def customer_profile(sender, instance, created, **kwargs):
         Customer.objects.create(
             user=instance,
             registration_start_date=datetime.date.today(),
-            added_by_user='System Generated',
+            email=instance.email,
+            added_by_user=request.user,
         )
         
 

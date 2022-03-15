@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Neura | Admin: Add Customer</title>
+  <title>Neura | Admin List Device</title>
 
   {% load static %}
 
@@ -30,9 +30,7 @@
 
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
-
-    {% include 'msiapp_templates/admin_folder/admin_plain_navbar.html' %}
-
+    {% include 'msiapp_templates/admin_folder/admin_navbar.html' %}
     {% include 'msiapp_templates/admin_folder/admin_sidebar.html' %}
     
     {% block content %}
@@ -46,7 +44,7 @@
         <div class="container-fluid">
             <div class="row mb-2">
             <div class="col-sm-6">
-                <h1 class="m-0">Admin Add Customer</h1>
+                <h1 class="m-0">Admin List Device(s)</h1>
             </div><!-- /.col -->
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
@@ -60,39 +58,53 @@
         <!-- /.content-header -->
     <!-- Main content -->
     <section class="content">
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card">
-                <form class="signup" id="signup_form" method="post" action="{% url 'register' %}">
-                    {% csrf_token %}
-                    <div class="card-body">
-                        <h5>Customer Details</h5>
-                        <hr>
-
-                            <div class="col-lg-6 col-sm-10">
-                                <label>Customer Username</label>
-                                <input class="form-control" value="{{ my_username }}" name="username"  placeholder="Enter Customer Username" required/>
+        <div>
+            <H4 style="margin-left:5px;">Customer: <span style="color:blue">{{ customer.name_1 }}</span></H6>
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="card">
+        
+                        <div class="card-body">
+                            {% for form in meetings %}
+                                <h5>Device's Basic Details</h5>
+                            {% endfor %}
+                            <hr>
+        
+                            <div class="row">
+                                {% for form in form %}
+                                <div class="col-12 col-sm-6 col-md-6 col-lg-3">
+                                    <article class="article article-style-b">
+                                        <div class="article-header">
+                                            {% if form.logo %}
+                                                <div class="article-image" data-background="/media/{{ form.logo }}">
+                                                </div>
+                                            {% else %}
+                                            <img  src="{% static '/img/avatar/avatar-1.png' %}" style="height: 200px; width: 250px;">
+        
+                                            {% endif %}
+                                            <div class="article-badge">
+                                                <div class="article-badge-item bg-danger col-md-8 col-sm-8 wow fadeInUp">
+                                                    <div class="article-badge-item bg-danger "><i class="fas fa-fire "></i>{{ form.name }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <a href="{% url 'admin_edit_device' pk=form.id %}" class="btn btn-primary btn-block col-md-8 col-sm-8 wow fadeInUp">Edit Device <i class="fas fa-chevron-right"></i></a>
+        
+                                        <a type="button" class="btn btn-danger btn-block delete_device col-md-8 col-sm-8 wow fadeInUp"  href="{% url 'admin_delete_device' pk=form.id %}">Delete Device <i class="fas fa-chevron-right"></i></a>
+                                        <!--<a href="#" class="btn btn-warning btn-block col-md-8 col-sm-8 wow fadeInUp">Device Enquiry<i class="fas fa-chevron-right"></i></a>-->
+        
+                                    </article>
+                                    <br>
+                                </div>
+                                {% endfor %}
                             </div>
-                        
-                            <br>
-                            <div class="col-lg-6 col-sm-10">
-                                    <label>Customer Email Address</label>
-                                    <input class="form-control" value="{{ my_email }}" name="email" placeholder="Enter Customer Email" required/>
-                            </div>
-                        <br>
-                        <br>
-						<div class="col-lg-6 col-sm-10">
-							<input class="form-control" name="password1" value="xc;ZWP%d&@4_.Ax" hidden readonly required/>
-							<input class="form-control" name="password2" value="xc;ZWP%d&@4_.Ax" hidden readonly required/>
-							</div>
-                        <div class="row">
-                            <button type="submit" class="btn btn-primary btn-block submit_btn">Save Customer</button>
+        
                         </div>
-                    </div>
-                    </form>
+        
                 </div>
             </div>
-    </div>
+        </div>
     </section>
 </div>
 <section class="footer">
