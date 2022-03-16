@@ -44,15 +44,15 @@
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-chart-pie"></i>
               <p>
-                Charts
+                User Profile
                 <i class="right fas fa-angle-left"></i>
               </p>
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="{% url 'charts' %}" class="nav-link">
+                <a href="{% url 'user_profile' %}" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
-                  <p>Charts</p>
+                  <p>User Profile</p>
                 </a>
               </li>
             </ul>
@@ -67,7 +67,7 @@
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="{% url 'device' %}" class="nav-link">
+                <a href="{% url 'customer_add_device' %}" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
                   <p>Add Device</p>
                 </a>
@@ -85,26 +85,26 @@
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-th"></i>
               <p>
-                Enquiry Reports
+                Enquiry Report
                 <i class="right fas fa-angle-left"></i>
               </p>
             </a>
             <ul class="nav nav-treeview">
               <li class="nav-item">
-                <a href="{% url 'enquiry_test' %}" class="nav-link">
+                <a href="{% url 'customer_navbar_search' %}" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
-                  <p>DataBase View Extract</p>
+                  <p>Energy Cost Report</p>
                 </a>
               </li>
               <li class="nav-item">
-                <a href="{% url 'list_device' %}" class="nav-link">
+                <a href="{% url 'customer_energy_usage_report' %}" class="nav-link">
                   <i class="far fa-circle nav-icon"></i>
-                  <p>Empty</p>
+                  <p>Energy Usage Report</p>
                 </a>
               </li>
             </ul>
           </li>
-
+          <!-- End Enquiry Reports  -->
         </ul>
       </nav>
       <!-- /.sidebar-menu -->

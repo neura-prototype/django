@@ -18,7 +18,7 @@ def customer_profile(sender, instance, created, **kwargs):
             user=instance,
             registration_start_date=datetime.date.today(),
             email=instance.email,
-            added_by_user=request.user,
+            added_by_user=instance.username,
         )
         
 
@@ -26,11 +26,14 @@ post_save.connect(customer_profile, sender=User)
 
 @receiver(post_save, sender=Device)
 def device_add(sender, instance, created, **kwargs):
+    print('signals', instance.name)
+    my_pass = 0
     if created:
-        print(instance.cus_id)
+        print('signals', instance.cus_id)
         customer = Customer.objects.get(id=instance.cus_id)
+
         instance.customers.add(customer)
 
-       # DeviceAuthored(customer=customer, device=instance).save()
+        #DeviceAuthored(customer=customer, device=instance).save()
 
 post_save.connect(device_add, sender=Device)

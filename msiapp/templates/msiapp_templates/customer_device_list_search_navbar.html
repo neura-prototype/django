@@ -17,29 +17,18 @@
       </li>
     </ul>
     
-    <form action="{% url 'admin_navbar_search' %}" method="post" enctype="multipart/form-data" id="myform">
+    <form action="{% url 'customer_navbar_search' %}" method="post" enctype="multipart/form-data" id="myform">
       {% csrf_token %}
       
         <div class="card-body">
           <div class="row">
-              <div class="col-lg-6 col-sm-10">
-                  <label>Start Date</label>
-                  <input type="date" class="form-control" name="start_date" placeholder="Enter Start Date" required/>
-              </div>
-          
-              <br>
-              <div class="col-lg-6 col-sm-10">
-                <label>End Date</label>
-                <input type="date" class="form-control" name="end_date" placeholder="Enter End Date" required/>
-              </div>
-            </div>
-              <br>
+
             <div class="row">
-              <div class="col-lg-6 col-sm-10">
-                      <label>Node Name</label>
-                      <input class="form-control" name="node_name" placeholder="Enter Node Name" required/>
+              <div class="col-lg-8 col-sm-10">
+                      <label>Device Name</label>
+                      <input class="form-control" name="username" placeholder="Enter Username" required/>
               </div>
-              <div class="col-lg-6 col-sm-10">
+              <div class="col-lg-4 col-sm-10">
                 <label>Submit</label>
                 <button type="submit" class="btn btn-primary btn-block submit_btn">SUBMIT</button>
               </div>

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>Neura | Admin Dashboard</title>
+  <title>Neura | Dashboard</title>
 
   {% load static %}
 
@@ -38,8 +38,8 @@
     <img class="animation__shake" src="{% static 'dist/img/AdminLTELogo.png' %}" alt="AdminLTELogo" height="60" width="60">
   </div>
 
-  {% include 'msiapp_templates/admin_folder/customer_search_navbar.html' %}
-  {% include 'msiapp_templates/admin_folder/admin_sidebar.html' %}
+  {% include 'msiapp_templates/customer_search_navbar.html' %}
+  {% include 'msiapp_templates/sidebar.html' %}
  {% block content %}
   <!-- Content Wrapper. Contains page content -->
   <div class="content-wrapper">
@@ -127,7 +127,7 @@
                                 </td>
                                     <td>
                                         <div class="primary-btn text-center">
-                                            <a class="btn btn-primary" href="{% url 'admin_list_device' pk=customer.user.id %} " >Search</a>
+                                            <a class="btn btn-primary" href="{% url 'customer_list_device' pk=customer.user.id %} " >Search</a>
                                         </div>
                                     </td>
                                 </tr>

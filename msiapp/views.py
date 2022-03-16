@@ -23,8 +23,10 @@ from .insert_test import day_django
 from datetime import date, timedelta, datetime
 from django.core.mail import send_mail
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib.auth.decorators import user_passes_test
 
 
+@login_required(login_url="login")
 def enquiry_test(request):
 	x = 0
 	y = 0
@@ -59,8 +61,30 @@ def charts(request):
   	return render(request, '../templates/msiapp_templates/charts.html')
 
 
+@login_required(login_url="login")
 def dashboard(request):
-	if request.user.groups == 'customer':
+	
+	if request.user.groups.filter(name='admin').exists():
+		customers = Customer.objects.all()
+		# Paginator
+		page_num = request.GET.get('page', 1)
+		paginator = Paginator(customers, 6) # 6 customers per page
+		print(paginator)
+		try:
+			customers = paginator.page(page_num)
+		except PageNotAnInteger:
+			# if page is not an integer, deliver the first page
+			customers = paginator.page(1)
+		except EmptyPage:
+			# if the page is out of range, deliver the last page
+			customers = paginator.page(paginator.num_pages)
+
+		context = {
+			'form': customers,
+			'page_obj': customers,
+		}
+		return render(request, '../templates/msiapp_templates/admin_folder/admin_customer_list.html', context)					
+	elif request.user.groups.filter(name='customer').exists():
 		return render(request, '../templates/msiapp_templates/dashboard.html')
 	else:
 		customers = Customer.objects.all()
@@ -83,7 +107,6 @@ def dashboard(request):
 		}
 		return render(request, '../templates/msiapp_templates/admin_folder/admin_customer_list.html', context)
 
-
 def loginPage(request):
 	if request.method == 'POST':
 		username = request.POST.get('username')
@@ -94,25 +117,50 @@ def loginPage(request):
 		if user is not None:
 			login(request, user)
 			my_user = User.objects.get(username=user)
+			print(my_user.id)
 			customer = Customer.objects.get(user=my_user)
+
 			if customer.name_1:
-				return redirect('dashboard')
-			else:
-				if user.groups == 'customer':
-					return redirect('user_profile')
+
+				if user.groups.filter(name='admin').exists():
+					return redirect('admin_list_customer')
+				elif user.groups.filter(name='customer').exists():
+					return render(request, '../templates/msiapp_templates/dashboard.html')
 				else:
+					return redirect('admin_list_customer')
+			else:
+				# print('request.user.user_groups', request.user.user_groups)
+				print('request.user', request.user)
+				#if request.user.groups == 'customer':
+				if user.groups.filter(name='admin').exists():
 					return redirect('admin_user_profile')
+				elif user.groups.filter(name='customer').exists():
+					return redirect('user_profile')
 		else:
 			messages.info(request, 'Username OR password is incorrect')
 
 	context = {}
 	return render(request, '../templates/accounts/login.html', context)
 
+
+@login_required(login_url="login")
 def logoutUser(request):
 	logout(request)
 	return redirect('login')
 
 
+######################################
+# This is actually add customer html #
+######################################
+def is_admin(user):
+    try:
+        return user.is_authenticated and user.groups.filter(name='admin').exists()
+    except User.DoesNotExist:
+        return False
+
+
+@user_passes_test(is_admin, login_url="login")
+@login_required(login_url="login")
 def registerPage(request):
 	form = CreateUserForm()
 	if request.method == 'POST':
@@ -120,9 +168,16 @@ def registerPage(request):
 		if form.is_valid():
 			user = form.save()
 			username = form.cleaned_data.get('username')
-			
-			group = Group.objects.get(name='customer')
-			user.groups.add(group)
+			my_admin_flag = request.POST.get('is_admin')
+			if my_admin_flag == 'customer':
+				group = Group.objects.get(name='customer')
+				user.groups.add(group)
+			elif my_admin_flag == 'admin':
+				group = Group.objects.get(name='admin')
+				user.groups.add(group)
+			else:
+				pass
+
 			my_email = []
 			messages.success(request, 'User was created for ' + username)
 			my_username = request.POST.get('username')
@@ -225,6 +280,7 @@ def user_profile(request):
 	return render(request, "msiapp_templates/user_profile.html", context)
 
 
+@user_passes_test(is_admin, login_url="login")
 @login_required(login_url="login")
 def admin_user_profile(request):
 	customer = Customer.objects.get(user=request.user)
@@ -324,12 +380,52 @@ def device(request):
 
 
 @login_required(login_url="login")
+def customer_add_device(request):
+	device = ''
+	if request.method == 'POST':
+		user = request.user
+		try:
+			user = User.objects.get(username=user)
+		except:
+			messages.warning(request, 'User does not exist. Please check username')
+			return redirect('customer_add_device')
+		
+		device = DeviceForm(request.POST, request.FILES)
+		customer = Customer.objects.get(user=request.user)
+		if device.is_valid():
+			Device.objects.create(
+				name = request.POST.get('name'),
+				address = request.POST.get('address'),
+				added_by_user = request.user,
+				cus_id = customer.id,
+			)
+			# Goes to signals.py after saving Device.
+			messages.success(request, "Device Saved")
+			print('yo yo')
+			return redirect("list_device")
+
+		else:
+			messages.error(request, "Invalid Form, Device Add Failed")
+
+	context = {
+		'form': device
+	}
+	delete_flag = 0
+	return render(request, '../templates/msiapp_templates/customer_device_add.html')
+
+
+@user_passes_test(is_admin, login_url="login")
+@login_required(login_url="login")
 def admin_add_device(request):
 	device = ''
 	if request.method == 'POST':
 		user = request.POST.get('customer_id')
-		print(str(user))
-		user = User.objects.get(username=user)
+		try:
+			user = User.objects.get(username=user)
+		except:
+			messages.warning(request, 'User does not exist. Please check username')
+			return redirect('admin_add_device')
+
 		device = DeviceForm(request.POST, request.FILES)
 		customer = Customer.objects.get(user=user)
 		
@@ -374,9 +470,10 @@ def list_device(request):
         'myFilter': my_filter,
         'form': meetings,
     }
-	return render(request, '../templates/msiapp_templates/device_list.html', context)
+	return render(request, '../templates/msiapp_templates/customer_device_list.html', context)
 
 
+@user_passes_test(is_admin, login_url="login")
 @login_required(login_url="login")
 def admin_list_device(request, pk):
 	if request.method == 'POST':
@@ -402,6 +499,7 @@ def admin_list_device(request, pk):
 	return render(request, '../templates/msiapp_templates/admin_folder/admin_device_list.html', context)
 
 
+@login_required(login_url="login")
 def edit_device(request, pk):
 	device_name = pk
 
@@ -422,6 +520,8 @@ def edit_device(request, pk):
 	return render(request, '../templates/msiapp_templates/admin_folder/admin_device_edit.html', context)
 
 
+@user_passes_test(is_admin, login_url="login")
+@login_required(login_url="login")
 def admin_edit_device(request, pk):
 	device_name = pk
 	try:
@@ -456,10 +556,13 @@ def admin_edit_device(request, pk):
 	return render(request, '../templates/msiapp_templates/admin_folder/admin_device_edit.html', context)
 
 
+@login_required(login_url="login")
 def delete_device(request, pk):
 	pass
 
 
+@user_passes_test(is_admin, login_url="login")
+@login_required(login_url="login")
 def admin_delete_device(request, pk):
 	device = Device.objects.get(id=pk)
 	device_id = device.id
@@ -471,10 +574,13 @@ def admin_delete_device(request, pk):
 	return redirect(admin_list_device, pk=customer.user.id)
 
 
+@user_passes_test(is_admin, login_url="login")
+@login_required(login_url="login")
 def admin_dashboard(request):
 	return render(request, '../templates/msiapp_templates/admin_folder/admin_dashboard.html')
 
 
+@login_required(login_url="login")
 def list_customer(request):
 	customers = Customer.objects.all()
 	initial_customer_count = customers.count()
@@ -507,6 +613,8 @@ def list_customer(request):
 	return render(request, '../templates/msiapp_templates/customer_list.html', context)
 
 
+@user_passes_test(is_admin, login_url="login")
+@login_required(login_url="login")
 def admin_list_customer(request):
 	customers = Customer.objects.all()
 	initial_customer_count = customers.count()
@@ -515,8 +623,7 @@ def admin_list_customer(request):
 	
 	# rebuilt list
 	customers = myFilter.qs
-	print(initial_customer_count)
-	print(len(customers))
+
 	# Paginator
 	page_num = request.GET.get('page', 1)
 	paginator = Paginator(customers, 6) # 6 customers per page
@@ -554,6 +661,8 @@ def admin_list_customer(request):
 	}
 	return render(request, '../templates/msiapp_templates/admin_folder/admin_customer_list.html', context)
 
+
+@login_required(login_url="login")
 def add_customer(request):
 	customers = Customer.objects.all()
 
@@ -563,6 +672,8 @@ def add_customer(request):
 	return render(request, '../templates/msiapp_templates/customer_add.html', context)
 
 
+@user_passes_test(is_admin, login_url="login")
+@login_required(login_url="login")
 def admin_add_customer(request):
 	customers = Customer.objects.all()
 
@@ -571,6 +682,8 @@ def admin_add_customer(request):
 	}
 	return render(request, '../templates/msiapp_templates/admin_folder/admin_customer_add.html', context)
 
+
+@login_required(login_url="login")
 def edit_customer(request, pk):
 	customers = Customer.objects.all()
 
@@ -580,6 +693,8 @@ def edit_customer(request, pk):
 	return render(request, '../templates/msiapp_templates/customer_add.html', context)
 
 
+@user_passes_test(is_admin, login_url="login")
+@login_required(login_url="login")
 def admin_edit_customer(request, pk):
 	customers = Customer.objects.all()
 
@@ -589,6 +704,7 @@ def admin_edit_customer(request, pk):
 	return render(request, '../templates/msiapp_templates/admin_folder/admin_customer_add.html', context)
 
 
+@login_required(login_url="login")
 def delete_customer(request, pk):
 	customers = Customer.objects.all()
 
@@ -598,6 +714,8 @@ def delete_customer(request, pk):
 	return render(request, '../templates/msiapp_templates/customer_add.html', context)
 
 
+@user_passes_test(is_admin, login_url="login")
+@login_required(login_url="login")
 def admin_delete_customer(request, pk):
 	customers = Customer.objects.all()
 
@@ -607,26 +725,29 @@ def admin_delete_customer(request, pk):
 	return render(request, '../templates/msiapp_templates/admin_folder/admin_customer_add.html', context)
 
 
+@user_passes_test(is_admin, login_url="login")
+@login_required(login_url="login")
 def admin_navbar_search(request):
+
 	if request.method == 'POST':
-		node_name = request.POST.get('node_name')
+		node_name = float(request.POST.get('node_name'))
 		start_date = request.POST.get('start_date')
 		end_date = request.POST.get('end_date')
 
-		engine = create_engine('mysql+mysqlconnector://root:password@localhost:3306/NeuraData')
-		period = pd.read_sql("SELECT * FROM vsumperiodvaluesday_django", engine)
-		
+		engine = create_engine('mysql+mysqlconnector://Quinn:Holland$1@neura.dyndns.org:3306/NeuraData')
+		# period = pd.read_sql("SELECT * FROM vsumperiodvaluesday", engine)
+		period = pd.read_sql("SELECT * FROM NeuraData.vsumperiodvaluesdayEnergy", engine)
+
 		node_period = period[(period['Node'] == node_name)]
 		#'''
 		if start_date == '' and end_date != '':
-			print('if_1')
+
 			# Change date for MySQL
 			if end_date:
 				end_date = end_date.replace('-','/')
 			new_period = node_period[(node_period['DateOnly'] <= end_date)]
 
 		elif start_date != '' and end_date != '':
-			print('if_2')
 			# Change date for MySQL
 			if start_date:
 				start_date = start_date.replace('-','/')
@@ -670,15 +791,18 @@ def admin_navbar_search(request):
 		return render(request, '../templates/msiapp_templates/admin_folder/admin_energy_price.html', context)
 
 
+@user_passes_test(is_admin, login_url="login")
+@login_required(login_url="login")
 def admin_energy_usage_report(request):
 	if request.method == 'POST':
 		node_name = float(request.POST.get('node_name'))
 		start_date = request.POST.get('start_date')
 		end_date = request.POST.get('end_date')
 
-		engine = create_engine('mysql+mysqlconnector://root:password@localhost:3306/NeuraData')
-		period = pd.read_sql("SELECT * FROM vsumperiodvaluesday_django", engine)
-		
+		engine = create_engine('mysql+mysqlconnector://Quinn:Holland$1@neura.dyndns.org:3306/NeuraData')
+		# period = pd.read_sql("SELECT * FROM vsumperiodvaluesday", engine)
+		period = pd.read_sql("SELECT * FROM NeuraData.vsumperiodvaluesdayEnergy", engine)
+
 		node_period = period[(period['Node'] == node_name)]
 		#'''
 		if start_date == '' and end_date != '':
@@ -730,3 +854,225 @@ def admin_energy_usage_report(request):
 			'form': customers,
 		}
 		return render(request, '../templates/msiapp_templates/admin_folder/admin_energy_usage.html', context)
+
+
+@user_passes_test(is_admin, login_url="login")
+@login_required(login_url="login")
+def admin_list_device_by_customer(request, pk):
+	user = pk
+	try:
+		customer = Customer.objects.get(user=user)
+	# 	print(customer)
+	except:
+		messages.error(request, 'No Device Present. Please Add New Device')
+		return redirect('device')
+	device = Device.objects.filter(customers=customer)
+	check = len(device)
+
+	if check == 0:
+		messages.warning(request, 'No Devices Linked To Customer. Please Add Device')
+		return redirect('device')
+
+	my_filter = DeviceFilter(request.GET, queryset=device)
+	meetings = my_filter.qs
+	context = {
+        'myFilter': my_filter,
+        'form': meetings,
+    }
+	return render(request, '../templates/msiapp_templates/admin_folder/admin_device_list_by_customer.html', context)
+
+
+@user_passes_test(is_admin, login_url="login")
+@login_required(login_url="login")
+def admin_list_customer_by_device(request, pk):
+	customers = []
+	print(pk)
+	try:
+		devices = Device.objects.filter(name=pk)
+		print(len(devices))
+	except:
+		messages.warning(request, 'No Device Present. Please Create Device')
+		return redirect('device')
+
+	#my_filter = Device(request.GET, queryset=devices)
+	# meetings = devices.qs
+
+	context = {
+        'myFilter': devices,
+        'form': devices,
+    }
+	return render(request, '../templates/msiapp_templates/admin_folder/admin_list_customer_by_device.html', context)
+
+#
+@login_required(login_url="login")
+def customer_navbar_search(request):
+	if request.method == 'POST':
+		node_name = float(request.POST.get('node_name'))
+		start_date = request.POST.get('start_date')
+		end_date = request.POST.get('end_date')
+
+		engine = create_engine('mysql+mysqlconnector://Quinn:Holland$1@neura.dyndns.org:3306/NeuraData')
+		# period = pd.read_sql("SELECT * FROM vsumperiodvaluesday", engine)
+		period = pd.read_sql("SELECT * FROM NeuraData.vsumperiodvaluesdayEnergy", engine)
+
+		node_period = period[(period['Node'] == node_name)]
+		#'''
+		if start_date == '' and end_date != '':
+			print('if_1')
+			# Change date for MySQL
+			if end_date:
+				end_date = end_date.replace('-','/')
+			new_period = node_period[(node_period['DateOnly'] <= end_date)]
+
+		elif start_date != '' and end_date != '':
+			print('if_2')
+			# Change date for MySQL
+			if start_date:
+				start_date = start_date.replace('-','/')
+			# Change date for MySQL
+			if end_date:
+				end_date = end_date.replace('-','/')
+			new_period = node_period[(node_period['DateOnly'] >= start_date) & (node_period['DateOnly'] <= end_date)]
+		elif end_date == '' and start_date != '':
+			print('if_3')
+			# Change date for MySQL
+			start_date = start_date.replace('-','/')
+			new_period = node_period[(node_period['DateOnly'] >= start_date)]
+		else:
+			
+			new_period = node_period
+		print(new_period)
+		# To display dataframe
+		table_content = new_period.to_html()
+		df = pd.DataFrame(new_period, columns=['DateOnly','EnergyCost'])
+		x = []
+		y = []
+		for column in df:
+			columnSeriesObj = df[column]
+			if column == 'DateOnly':
+				x = columnSeriesObj.values
+			elif column == 'EnergyCost':
+				y = columnSeriesObj.values
+		chart = get_plot(x, y)
+		df.plot(x ='DateOnly', y='EnergyCost', kind = 'line')
+		context = {
+			'chart':chart,
+			'table_content': table_content,
+		}
+		return render(request, '../templates/msiapp_templates/customer_energy_price.html', context)
+	else:
+		customers = ''
+
+		context = {
+			'form': customers,
+		}
+		return render(request, '../templates/msiapp_templates/customer_energy_price.html', context)
+
+
+@login_required(login_url="login")
+def customer_energy_usage_report(request):
+	if request.method == 'POST':
+		node_name = float(request.POST.get('node_name'))
+		start_date = request.POST.get('start_date')
+		end_date = request.POST.get('end_date')
+
+		engine = create_engine('mysql+mysqlconnector://Quinn:Holland$1@neura.dyndns.org:3306/NeuraData')
+		# period = pd.read_sql("SELECT * FROM vsumperiodvaluesday", engine)
+		period = pd.read_sql("SELECT * FROM NeuraData.vsumperiodvaluesdayEnergy", engine)
+		node_period = period[(period['Node'] == node_name)]
+		#'''
+		if start_date == '' and end_date != '':
+
+			# Change date for MySQL
+			if end_date:
+				end_date = end_date.replace('-','/')
+			new_period = node_period[(node_period['DateOnly'] <= end_date)]
+
+		elif start_date != '' and end_date != '':
+			# Change date for MySQL
+			if start_date:
+				start_date = start_date.replace('-','/')
+			# Change date for MySQL
+			if end_date:
+				end_date = end_date.replace('-','/')
+			new_period = node_period[(node_period['DateOnly'] >= start_date) & (node_period['DateOnly'] <= end_date)]
+		elif end_date == '' and start_date != '':
+			print('if_3')
+			# Change date for MySQL
+			start_date = start_date.replace('-','/')
+			new_period = node_period[(node_period['DateOnly'] >= start_date)]
+		else:
+			
+			new_period = node_period
+		print(new_period)
+		# To display dataframe
+		table_content = new_period.to_html()
+		df = pd.DataFrame(new_period, columns=['DateOnly','Energy'])
+		x = []
+		y = []
+		for column in df:
+			columnSeriesObj = df[column]
+			if column == 'DateOnly':
+				x = columnSeriesObj.values
+			elif column == 'Energy':
+				y = columnSeriesObj.values
+		chart = get_usage_plot(x, y)
+		df.plot(x ='DateOnly', y='Energy', kind = 'line')
+		context = {
+			'chart':chart,
+			'table_content': table_content,
+		}
+		return render(request, '../templates/msiapp_templates/customer_energy_usage.html', context)
+	else:
+		customers = ''
+
+		context = {
+			'form': customers,
+		}
+		return render(request, '../templates/msiapp_templates/customer_energy_usage.html', context)
+
+
+@login_required(login_url="login")
+def customer_list_device_by_customer(request, pk):
+	user = pk
+	try:
+		customer = Customer.objects.get(user=user)
+	# 	print(customer)
+	except:
+		messages.error(request, 'No Device Present. Please Add New Device')
+		return redirect('device')
+	device = Device.objects.filter(customers=customer)
+	check = len(device)
+
+	if check == 0:
+		messages.warning(request, 'No Devices Linked To Customer. Please Add Device')
+		return redirect('device')
+
+	my_filter = DeviceFilter(request.GET, queryset=device)
+	meetings = my_filter.qs
+	context = {
+        'myFilter': my_filter,
+        'form': meetings,
+    }
+	return render(request, '../templates/msiapp_templates/admin_folder/admin_device_list_by_customer.html', context)
+
+
+@login_required(login_url="login")
+def customer_list_customer_by_device(request, pk):
+	customers = []
+	print(pk)
+	try:
+		devices = Device.objects.filter(name=pk)
+		print(len(devices))
+	except:
+		messages.warning(request, 'No Device Present. Please Create Device')
+		return redirect('device')
+
+	#my_filter = Device(request.GET, queryset=devices)
+	# meetings = devices.qs
+
+	context = {
+        'myFilter': devices,
+        'form': devices,
+    }
+	return render(request, '../templates/msiapp_templates/admin_folder/admin_list_customer_by_device.html', context)
